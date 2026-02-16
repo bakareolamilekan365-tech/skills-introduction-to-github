@@ -35,3 +35,15 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Node modules and dependencies #
+##################################
+node_modules/
+package-lock.json
+yarn.lock
+
+# Temporary files #
+###################
+/tmp/
+*.tmp
+*.temp
