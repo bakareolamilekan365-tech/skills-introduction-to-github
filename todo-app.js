@@ -66,7 +66,7 @@ function addTodo() {
     const text = todoInput.value.trim();
     
     if (text === '') {
-        alert('Please enter a todo item!');
+        showInlineMessage('Please enter a todo item!');
         return;
     }
 
@@ -119,7 +119,7 @@ function clearCompleted() {
     const completedCount = todos.filter(t => t.completed).length;
     
     if (completedCount === 0) {
-        alert('No completed todos to clear!');
+        showInlineMessage('No completed todos to clear!');
         return;
     }
 
@@ -186,6 +186,26 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Show inline message (non-blocking alternative to alert)
+function showInlineMessage(message) {
+    const existingMessage = document.querySelector('.inline-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = 'inline-message';
+    messageEl.textContent = message;
+    
+    const inputSection = document.querySelector('.input-section');
+    inputSection.parentNode.insertBefore(messageEl, inputSection.nextSibling);
+    
+    setTimeout(() => {
+        messageEl.classList.add('fade-out');
+        setTimeout(() => messageEl.remove(), 300);
+    }, 3000);
 }
 
 // Check notification permission status
@@ -259,16 +279,29 @@ function sendNotification(title, body) {
 
 // Periodic check-up notification (every 30 minutes)
 function setupPeriodicCheckup() {
-    setInterval(() => {
+    // Delay first check-up by 30 minutes to avoid immediate notification
+    setTimeout(() => {
+        // Send first check-up
         const activeCount = todos.filter(todo => !todo.completed).length;
-        
         if (activeCount > 0) {
             sendNotification(
                 'Todo Check-up Reminder ⏰',
                 `You have ${activeCount} todo(s) waiting to be completed!`
             );
         }
-    }, 30 * 60 * 1000); // 30 minutes
+        
+        // Then set up recurring check-ups
+        setInterval(() => {
+            const activeCount = todos.filter(todo => !todo.completed).length;
+            
+            if (activeCount > 0) {
+                sendNotification(
+                    'Todo Check-up Reminder ⏰',
+                    `You have ${activeCount} todo(s) waiting to be completed!`
+                );
+            }
+        }, 30 * 60 * 1000); // 30 minutes
+    }, 30 * 60 * 1000); // Initial 30 minute delay
 }
 
 // Initialize the app when DOM is loaded
