@@ -123,14 +123,53 @@ function clearCompleted() {
         return;
     }
 
-    if (confirm(`Clear ${completedCount} completed todo(s)?`)) {
+    // Use inline confirmation instead of blocking confirm dialog
+    showClearConfirmation(completedCount);
+}
+
+// Show confirmation for clearing completed todos
+function showClearConfirmation(completedCount) {
+    const existingConfirm = document.querySelector('.confirm-dialog');
+    if (existingConfirm) {
+        existingConfirm.remove();
+    }
+    
+    const confirmEl = document.createElement('div');
+    confirmEl.className = 'confirm-dialog';
+    confirmEl.innerHTML = `
+        <div class="confirm-content">
+            <p>Clear ${completedCount} completed todo(s)?</p>
+            <div class="confirm-buttons">
+                <button class="btn-confirm-yes">Yes, Clear</button>
+                <button class="btn-confirm-no">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(confirmEl);
+    
+    // Handle yes button
+    confirmEl.querySelector('.btn-confirm-yes').addEventListener('click', () => {
         todos = todos.filter(todo => !todo.completed);
         saveTodos();
         renderTodos();
         updateStats();
+        confirmEl.remove();
         
         sendNotification('Todos Cleared', `${completedCount} completed todo(s) have been removed.`);
-    }
+    });
+    
+    // Handle no button
+    confirmEl.querySelector('.btn-confirm-no').addEventListener('click', () => {
+        confirmEl.remove();
+    });
+    
+    // Close on outside click
+    confirmEl.addEventListener('click', (e) => {
+        if (e.target === confirmEl) {
+            confirmEl.remove();
+        }
+    });
 }
 
 // Get filtered todos
@@ -242,7 +281,7 @@ function updateNotificationStatus() {
 // Request notification permission
 function requestNotificationPermission() {
     if (!('Notification' in window)) {
-        alert('This browser does not support notifications');
+        showInlineMessage('This browser does not support notifications');
         return;
     }
 
